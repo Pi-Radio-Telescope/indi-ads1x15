@@ -14,7 +14,6 @@ find_package(Nova REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(GSL REQUIRED)
 find_library(RT rt REQUIRED)
-#find_library(indi libindi REQUIRED)
 
 add_compile_options(-Wall -Wextra -Wno-shadow -Wpedantic -O3)
 
@@ -47,7 +46,6 @@ include_directories( ${EV_INCLUDE_DIR})
 set(SOURCE_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/i2cdevice.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ads1115.cpp"
-    #"${CMAKE_CURRENT_SOURCE_DIR}/voltage_monitor.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ads1115_measurement.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/indi_ads1x15.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/connection_i2c.cpp"
@@ -56,7 +54,6 @@ set(SOURCE_FILES
 set(HEADER_FILES
     "${CMAKE_CURRENT_SOURCE_DIR}/i2cdevice.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/ads1115.h"
-    #"${CMAKE_CURRENT_SOURCE_DIR}/voltage_monitor.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/ads1115_measurement.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/indi_ads1x15.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/utility.h"
