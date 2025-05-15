@@ -11,7 +11,6 @@
 #include "defaultdevice.h"
 #include "connection_i2c.h"
 #include <ads1115_measurement.h>
-// #include <voltage_monitor.h>
 #include <map>
 
 class i2cDevice;
@@ -50,16 +49,6 @@ private:
     void updateTime();
     auto upTime() const -> std::chrono::duration<long, std::ratio<1>>;
 
-    // Device physical bus
-//     ITextVectorProperty BusTP;
-//     IText BusT {};
-
-//     ISwitch AddressS[6];
-//     ISwitchVectorProperty AddressSP;
-
-//     ISwitch *SystemBusS = nullptr;
-//     ISwitchVectorProperty SystemBusSP;
-
     ILight StatusL;
     ILightVectorProperty StatusLP;
 
@@ -78,16 +67,7 @@ private:
 
     std::shared_ptr<ADS1115> m_adc { nullptr };
     constexpr static std::size_t m_num_channels { 4 };
-//     std::shared_ptr<Connection::I2C> m_connection { nullptr };
-    
-    std::map<std::uint8_t, std::shared_ptr<i2cDevice>> i2cDeviceMap {};
-
-//     std::vector<std::shared_ptr<PiRaTe::Ads1115VoltageMonitor>> voltageMonitors {};
     std::array<std::shared_ptr<PiRaTe::Ads1115Measurement>, m_num_channels> voltageMeasurements {};
     std::chrono::time_point<std::chrono::system_clock> fStartTime {};
-    std::string m_ConfigBus;
-    std::uint8_t m_ConfigAddress { 0xff };
-    std::vector<std::string> m_SystemBuses;
     std::shared_ptr<Connection::I2C> m_interface { nullptr };
-
 };

@@ -80,9 +80,10 @@ class I2C : public Interface
         virtual bool processHandshake();
  
         // Device physical bus
-        ITextVectorProperty BusTP;
         IText BusT {};
+        ITextVectorProperty BusTP;
  
+        // Device's bus address
         IText DevAddrT {};
         ITextVectorProperty DevAddrTP;
  

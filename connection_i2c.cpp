@@ -76,7 +76,6 @@ I2C::I2C(INDI::DefaultDevice *dev, IPerm permission) : Interface(dev, CONNECTION
     // Try to load the bus from the config file. If that fails, use default bus.
     if (IUGetConfigText(dev->getDeviceName(), "I2C_BUS", "I2C_BUS", buffer, 256) == 0)
     {
-//         m_ConfigBus = buffer;
         IUFillText(&BusT, "I2C_BUS", "I2C Bus", buffer);
     }
     else
@@ -90,15 +89,14 @@ I2C::I2C(INDI::DefaultDevice *dev, IPerm permission) : Interface(dev, CONNECTION
     IUFillTextVector(&BusTP, &BusT, 1, dev->getDeviceName(), "I2C_BUS", "I2C Bus", MAIN_CONTROL_TAB, m_Permission, 60,
                      IPS_IDLE);
     
-    char buffer2[256] = {0};
     // Try to load the device address from the config file. If that fails, use default address.
-    if (IUGetConfigText(dev->getDeviceName(), "I2C_ADDRESS", "I2C_ADDRESS", buffer2, 256) == 0)
+    if (IUGetConfigText(dev->getDeviceName(), "I2C_ADDRESS", "I2C_ADDRESS", buffer, 256) == 0)
     {
-        IUFillText(&DevAddrT, "I2C_ADDRESS", "Device Address", buffer2);
+        IUFillText(&DevAddrT, "I2C_ADDRESS", "Device Address", buffer);
         DEBUGF(INDI::Logger::DBG_SESSION, "read i2c address from config: %s", "0x02");
     } else {
         IUFillText(&DevAddrT, "I2C_ADDRESS", "Device Address", DEFAULT_I2C_ADDRESS);
-        DEBUGF(INDI::Logger::DBG_ERROR, "error reading i2c address from config: %s", buffer2);
+        DEBUGF(INDI::Logger::DBG_ERROR, "error reading i2c address from config: %s", buffer);
     }
 
     IUFillTextVector(&DevAddrTP, &DevAddrT, 1, dev->getDeviceName(), "I2C_ADDRESS", "Address", MAIN_CONTROL_TAB,

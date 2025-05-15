@@ -1,9 +1,5 @@
 /*
-   INDI Raspberry Pi based mount driver.
-   The driver itself acts as a telescope mount reading the positions from SSI-based absolute encoders from
-   the on-board SPI interfaces and driving DC motors via PWM over GPIO pins
-   "Pi Radiotelescope Driver"
-
+   INDI device driver for I2C ADC ADS1x1x family
 */
 
 #include "indi_ads1x15.h"
@@ -27,8 +23,6 @@ class Serial;
 class TCP;
 }
 
-typedef enum { ADR48, ADR49, ADR4A, ADR4B } AdsAdresses;
-
 constexpr unsigned int POLL_INTERVAL_MS { 500 }; //< polling interval of this driver
 constexpr std::uint8_t DEFAULT_ADC_ADDRESS { 0x48 }; //< default I2C address of ADS1115 ADCs to be read-out
 constexpr std::chrono::milliseconds DEFAULT_INT_TIME { 1000 };
@@ -47,16 +41,6 @@ const I2cVoltageDef default_measurement_voltage_def {
     "Analog", 0., 55.5556, DEFAULT_ADC_ADDRESS, 0, "dB"
 };
 
-
-/*
-const std::vector<I2cVoltageDef> supply_voltage_defs { { "+3.3V", 3.3, 2., VOLTAGE_MONITOR_ADC_ADDR, 0, "" },
-    { "+5V", 5., 2., VOLTAGE_MONITOR_ADC_ADDR, 1, "" },
-    { "+13.8V", 13.8, 11., VOLTAGE_MONITOR_ADC_ADDR, 2, "" },
-    { "+24V", 24., 11., VOLTAGE_MONITOR_ADC_ADDR, 3, "" } };
-
-const std::vector<I2cVoltageDef> measurement_voltage_defs { { "Analog1", 0., 55.5556, MOTOR_ADC_ADDR, 2, "dB" },
-    { "Analog2", 0., 55.5556, MOTOR_ADC_ADDR, 3, "dB" } };
-*/
 
 // the server will handle one unique instance of the driver
 static std::unique_ptr<IndiADS1x15> ads(new IndiADS1x15());
@@ -128,32 +112,6 @@ bool IndiADS1x15::initProperties()
 
     // We add an additional debug level so we can log verbose scope status
     DBG_DEVICE = INDI::Logger::getInstance().addDebugLevel("Device Verbose", "DEVICE");
-//     char configBus[256] = {0};
-//     // Try to load the bus from the config file. If that fails, use default bus.
-//     if (IUGetConfigText(this->getDeviceName(), "I2C_BUS", "I2C_BUS", configBus, 256) == 0)
-//     {
-//         m_ConfigBus = configBus;
-//         IUFillText(&BusT, "I2C_BUS", "I2C Bus", configBus);
-//     }
-//     else
-//     {
-// #ifdef __APPLE__
-//         IUFillText(&BusT, "I2C_BUS", "I2C Bus", "/dev/cu.i2c-1");
-// #else
-//         IUFillText(&BusT, "I2C_BUS", "I2C Bus", "/dev/i2c-1");
-// #endif
-//     }
-//     IUFillTextVector(&BusTP, &BusT, 1, getDeviceName(), "I2C_BUS", "I2C Bus", MAIN_CONTROL_TAB, IP_RW, 60,
-//                      IPS_IDLE);
- 
-//     IUFillSwitch(&AddressS[0], "0x48", "", ISS_ON);
-//     IUFillSwitch(&AddressS[1], "0x49", "", ISS_OFF);
-//     IUFillSwitch(&AddressS[2], "0x4a", "", ISS_OFF);
-//     IUFillSwitch(&AddressS[3], "0x4b", "", ISS_OFF);
-//     IUFillSwitchVector(&AddressSP, AddressS, 4, getDeviceName(), "I2C_ADDRESS", "Bus Address", MAIN_CONTROL_TAB,
-//                        IP_RW, ISR_1OFMANY, 60, IPS_IDLE);
-//     defineProperty(&BusTP);
-//     defineProperty(&AddressSP);
     m_interface = std::make_shared<Connection::I2C>(this);
     registerConnection(m_interface.get());
     setActiveConnection(m_interface.get());
@@ -165,10 +123,6 @@ bool IndiADS1x15::initProperties()
     IUFillLight(&StatusL, "STATUS", "Status", IPS_OK);
     IUFillLightVector(&StatusLP, &StatusL, 1, getDeviceName(), "STATUS", "Connection", MAIN_CONTROL_TAB, IPS_IDLE);
 
-//     IUFillNumber(&VoltageMeasurementN[0], "MEASUREMENT0", "+0V", "%4.2f V", 0, 0, 0, 0);
-//     IUFillNumberVector(&VoltageMeasurementNP, VoltageMeasurementN, 0, getDeviceName(), "MEASUREMENTS", "Measurements", "Monitoring",
-//         IP_RO, 60, IPS_IDLE);
-    
     IUFillNumber(&MeasurementIntTimeN, "TIME", "Time", "%5.2f s", 0, 60, 0.1, DEFAULT_INT_TIME.count() / 1000.);
     IUFillNumberVector(&MeasurementIntTimeNP, &MeasurementIntTimeN, 1, getDeviceName(), "INT_TIME", "Integration Time", OPTIONS_TAB,
         IP_RW, 60, IPS_IDLE);
@@ -178,8 +132,6 @@ bool IndiADS1x15::initProperties()
         IP_RO, 60, IPS_IDLE);
 
     addDebugControl();
-//     defineProperty(&BusTP);
-//     defineProperty(&AddressSP);
     return true;
 }
 
@@ -211,33 +163,12 @@ bool IndiADS1x15::updateProperties()
 
 bool IndiADS1x15::ISNewText(const char *dev, const char *name, char *texts[], char *names[], int n)
 {
-//     if (!strcmp(dev, getDeviceName()))
-//     {
-//         // I2C Bus
-//         if (!strcmp(name, BusTP.name))
-//         {
-//             IUUpdateText(&BusTP, texts, names, n);
-//             BusTP.s = IPS_OK;
-//             IDSetText(&BusTP, nullptr);
-//         }
-//         return true;
-//     }
- 
     //  Nobody has claimed this, so forward it to the base class method
     return INDI::DefaultDevice::ISNewText(dev, name, texts, names, n);
 }
 
 bool IndiADS1x15::ISNewSwitch(const char* dev, const char* name, ISState* states, char* names[], int n)
 {
-//     if (strcmp(dev, getDeviceName()) == 0) {
-//         if (!strcmp(name, AddressSP.name))
-//         {
-//             IUUpdateSwitch(&AddressSP, states, names, n);
-//             AddressSP.s = IPS_OK;
-//             IDSetSwitch(&AddressSP, nullptr);
-//             return true;
-//         }
-//     }
     //  Nobody has claimed this, so forward it to the base class' method
     return INDI::DefaultDevice::ISNewSwitch(dev, name, states, names, n);
 }
@@ -254,10 +185,8 @@ bool IndiADS1x15::ISNewNumber(const char* dev, const char* name, double values[]
                 MeasurementIntTimeN.value = values[0];
                 IDSetNumber(&MeasurementIntTimeNP, nullptr);
                 MeasurementIntTimeNP.s = IPS_OK;
-//                 return true;
             } else {
                 MeasurementIntTimeNP.s = IPS_ALERT;
-//                 return false;
             }
         }
     }
@@ -292,9 +221,6 @@ bool IndiADS1x15::Connect()
     }
     DEBUGF(INDI::Logger::DBG_SESSION, "Connected to ADS1x15 at %s, addr 0x%02x.", m_interface->bus(), addr);
     
-//     if (Connect(BusT[0].text, addr) && processHandshake())
-//         return true;
-
     StatusL.s = IPS_OK;
     StatusLP.s = IPS_OK;
     IDSetLight(&StatusLP, nullptr);
@@ -310,7 +236,6 @@ bool IndiADS1x15::Connect()
     DEBUGF(INDI::Logger::DBG_SESSION, "ADC1 values ch0: %f V ch1: %f ch3: %f V ch4: %f", v1, v2, v3, v4);
 
     // set up the measurement voltages to be monitored
-//     voltageMeasurements.clear();
     int voltage_index = 0;
     for (auto &channel : voltageMeasurements) {
         I2cVoltageDef item = default_measurement_voltage_def;
@@ -327,12 +252,7 @@ bool IndiADS1x15::Connect()
         );
         channel = std::move(meas);
         
-//         deleteProperty(VoltageMeasurementNP.name);
-//         deleteProperty(MeasurementIntTimeNP.name);
-        
         IUFillNumber(&VoltageMeasurementN[voltage_index], ("MEASUREMENT" + std::to_string(voltage_index)).c_str(), (item.name).c_str(), ("%4.3f " + item.unit).c_str(), 0, 0, 0, 0.);
-//         defineProperty(&VoltageMeasurementNP);
-//         defineProperty(&MeasurementIntTimeNP);
 
         voltage_index++;
     }
@@ -362,8 +282,8 @@ void IndiADS1x15::TimerHit()
 ***************************************************************************************/
 bool IndiADS1x15::Handshake()
 {
-    // When communicating with a real mount, we check here if commands are receieved
-    // and acknolowedged by the mount.
+    // When communicating with a real device, we check here if commands are receieved  
+    // and acknolowedged by the device.
     if (isConnected()) {
         return true;
     }
