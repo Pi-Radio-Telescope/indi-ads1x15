@@ -19,8 +19,6 @@
 
 namespace Connection {
 class Interface;
-class Serial;
-class TCP;
 }
 
 constexpr unsigned int POLL_INTERVAL_MS { 500 }; //< polling interval of this driver
@@ -213,6 +211,10 @@ bool IndiADS1x15::Connect()
 
     // search for the ADS1115 ADC at the specified addresses and initialize it
     m_adc = std::make_shared<ADS1115>(m_interface->bus(), m_interface->address());
+    // the following line demonstrates, how you would like to do the upcast from
+    // i2cDevice to ADS1115 but unfortunately it doesn't work
+    // unless the i2cDevice-type object was created as ADS1115
+    // this could in principle be achieved by templating the Connection::I2C class
 //    m_adc = std::dynamic_pointer_cast<ADS1115>(m_interface->get_device());
     
     if (!m_adc || !m_adc->devicePresent()) {
@@ -304,6 +306,7 @@ void IndiADS1x15::updateMonitoring()
     DriverUpTimeN.value = upTime().count() / 3600.;
     IDSetNumber(&DriverUpTimeNP, nullptr);
     
+    // update voltage measurements
     int voltage_index = 0;
     if (!voltageMeasurements.empty()) {
         VoltageMeasurementNP.s = IPS_IDLE;
