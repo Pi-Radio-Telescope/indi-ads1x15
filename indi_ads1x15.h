@@ -1,9 +1,5 @@
 /*
-   INDI Raspberry Pi based mount driver.
-   The driver itself acts as a telescope mount reading the positions from SSI-based absolute encoders from
-   the on-board SPI interfaces and driving DC motors via PWM over GPIO pins
-   "Pi Radiotelescope Driver"
-
+   INDI driver for I2C Analog-to-Digital-Converter (ADC).
 */
 
 #pragma once
