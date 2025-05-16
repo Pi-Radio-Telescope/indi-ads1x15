@@ -1,0 +1,14 @@
+[Unit]
+Description=Indi Server
+After=sockets.target network-online.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/bin/bash -c 'exec $(which indiserver) -v indi_ads1x15'
+ExecStop=/bin/kill $MAINPID
+Restart=always
+TimeoutSec=10
+
+[Install]
+WantedBy=multi-user.target

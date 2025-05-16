@@ -87,3 +87,5 @@ install(
     ${CMAKE_CURRENT_BINARY_DIR}/indi_ads1x15.xml
     DESTINATION ${INDI_DATA_DIR}
 )
+
+add_subdirectory(config)
