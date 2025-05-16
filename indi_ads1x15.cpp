@@ -114,8 +114,6 @@ bool IndiADS1x15::initProperties()
     registerConnection(m_interface.get());
     setActiveConnection(m_interface.get());
     
-//     m_interface->Activated();
-
     setDefaultPollingPeriod(POLL_INTERVAL_MS);
 
     IUFillLight(&StatusL, "STATUS", "Status", IPS_OK);
