@@ -111,6 +111,7 @@ void Ads1115Measurement::setIntTime(std::chrono::milliseconds ms)
 
 void Ads1115Measurement::setFactor(double factor)
 {
+    std::lock_guard<std::mutex> lock(fMutex);
     fFactor = factor;
 }
 
