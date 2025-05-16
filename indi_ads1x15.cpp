@@ -360,7 +360,7 @@ void IndiADS1x15::updateMonitoring()
 
 bool IndiADS1x15::saveConfig(bool silent, const char *property)
 {
-     return INDI::DefaultDevice::saveConfig(silent, property);
+    return INDI::DefaultDevice::saveConfig(silent, property);
 }
 
 auto IndiADS1x15::upTime() const -> std::chrono::duration<long, std::ratio<1>>
