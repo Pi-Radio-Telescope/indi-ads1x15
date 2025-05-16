@@ -49,13 +49,17 @@ private:
     void updateTime();
     auto upTime() const -> std::chrono::duration<long, std::ratio<1>>;
 
+    constexpr static std::size_t m_num_channels { 4 };
+
     ILight StatusL;
     ILightVectorProperty StatusLP;
 
-    INumber VoltageMeasurementN[16];
+    INumber VoltageMeasurementN[m_num_channels];
     INumberVectorProperty VoltageMeasurementNP;
     INumber MeasurementIntTimeN;
     INumberVectorProperty MeasurementIntTimeNP;
+    INumber MeasurementFactorN[m_num_channels];
+    INumberVectorProperty MeasurementFactorNP;
 
     INumber DriverUpTimeN;
     INumberVectorProperty DriverUpTimeNP;
@@ -66,7 +70,6 @@ private:
     uint8_t DBG_DEVICE { INDI::Logger::DBG_IGNORE };
 
     std::shared_ptr<ADS1115> m_adc { nullptr };
-    constexpr static std::size_t m_num_channels { 4 };
     std::array<std::shared_ptr<PiRaTe::Ads1115Measurement>, m_num_channels> voltageMeasurements {};
     std::chrono::time_point<std::chrono::system_clock> fStartTime {};
     std::shared_ptr<Connection::I2C> m_interface { nullptr };
