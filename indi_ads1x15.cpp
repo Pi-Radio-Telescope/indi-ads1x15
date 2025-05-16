@@ -294,6 +294,10 @@ bool IndiADS1x15::Connect()
 
 bool IndiADS1x15::Disconnect()
 {
+    for (auto &channel : voltageMeasurements) {
+        channel.reset();
+    }
+    m_adc.reset();
     return true;
 }
 
