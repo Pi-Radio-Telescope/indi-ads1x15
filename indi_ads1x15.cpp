@@ -224,9 +224,6 @@ bool IndiADS1x15::ISNewNumber(const char* dev, const char* name, double values[]
             }
             IDSetNumber(&MeasurementIntTimeNP, nullptr);
             MeasurementIntTimeNP.s = IPS_OK;
-//             } else {
-//                 MeasurementIntTimeNP.s = IPS_ALERT;
-//             }
         } 
         else if (!strcmp(name, MeasurementFactorNP.name)) {
             if (!voltageMeasurements.empty()) {
