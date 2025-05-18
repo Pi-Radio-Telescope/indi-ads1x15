@@ -47,6 +47,7 @@ public:
     [[nodiscard]] auto name() const -> std::string { return fName; }
     void setIntTime(std::chrono::milliseconds ms);
     void setFactor(double factor);
+    void inhibit(bool state = true);
 
     void registerVoltageReadyCallback(std::function<void(double)> fn) { fVoltageReadyFn = fn; }
 
@@ -69,6 +70,8 @@ private:
 
     double fFactor { 1. };
     std::chrono::milliseconds fIntTime { 1000 };
+
+    bool fInhibited { false };
 };
 
 } // namespace PiRaTe

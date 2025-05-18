@@ -56,7 +56,7 @@ Ads1115Measurement::~Ads1115Measurement()
 void Ads1115Measurement::threadLoop()
 {
     while (fActiveLoop) {
-        if (hasAdc()) {
+        if (hasAdc() && !fInhibited) {
             double conv_time { 0. };
             if ([[maybe_unused]] bool readout_guard = true) {
                 // read current voltage from adc
@@ -112,6 +112,13 @@ void Ads1115Measurement::setFactor(double factor)
 {
     std::lock_guard<std::mutex> lock(fMutex);
     fFactor = factor;
+}
+
+void Ads1115Measurement::inhibit(bool state)
+{
+    if (fInhibited == state) return;
+    std::lock_guard<std::mutex> lock(fMutex);
+    fInhibited = state;
 }
 
 } // namespace PiRaTe
