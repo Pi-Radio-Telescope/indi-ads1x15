@@ -52,7 +52,9 @@ private:
 
     INumber VoltageMeasurementN[m_num_channels];
     INumberVectorProperty VoltageMeasurementNP;
-    INumber MeasurementIntTimeN;
+    INumber MeasurementGlobalIntTimeN;
+    INumberVectorProperty MeasurementGlobalIntTimeNP;
+    INumber MeasurementIntTimeN[m_num_channels];
     INumberVectorProperty MeasurementIntTimeNP;
     INumber MeasurementFactorN[m_num_channels];
     INumberVectorProperty MeasurementFactorNP;

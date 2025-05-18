@@ -119,10 +119,7 @@ bool IndiADS1x15::initProperties()
     IUFillLight(&StatusL, "STATUS", "Status", IPS_OK);
     IUFillLightVector(&StatusLP, &StatusL, 1, getDeviceName(), "STATUS", "Connection", MAIN_CONTROL_TAB, IPS_IDLE);
 
-    IUFillNumber(&MeasurementIntTimeN, "INT_TIME", "Time", "%5.2f s", 0, 60, 0.1, DEFAULT_INT_TIME.count() / 1000.);
-    IUFillNumberVector(&MeasurementIntTimeNP, &MeasurementIntTimeN, 1, getDeviceName(), "INT_TIME", "Integration Time", OPTIONS_TAB,
-        IP_RW, 60, IPS_IDLE);
-    IUGetConfigNumber(getDeviceName(), "INT_TIME", "INT_TIME", &MeasurementIntTimeN.value);
+    IUFillNumber(&MeasurementGlobalIntTimeN, "INT_TIME", "Int Time", "%5.2f s", 0, 60, 0.1, DEFAULT_INT_TIME.count() / 1000.);
     
     IUFillNumber(&DriverUpTimeN, "UPTIME", "Uptime", "%5.2f h", 0, 0, 0, 0);
     IUFillNumberVector(&DriverUpTimeNP, &DriverUpTimeN, 1, getDeviceName(), "DRIVER_UPTIME", "Driver Uptime", OPTIONS_TAB,
@@ -137,7 +134,16 @@ bool IndiADS1x15::initProperties()
         if (IUGetConfigNumber(getDeviceName(), "FACTORS", ("FACTOR"+std::to_string(i)).c_str(), &factor)==0) {
             MeasurementFactorN[i].value = factor;
         }
+
+        IUFillNumber(&MeasurementIntTimeN[i], ("INT_TIME"+std::to_string(i)).c_str(), ("Int Time "+std::to_string(i)).c_str(), "%5.2f s", 0, 60, 0.1, DEFAULT_INT_TIME.count() / 1000.);
     }
+
+    IUFillNumberVector(&MeasurementGlobalIntTimeNP, &MeasurementGlobalIntTimeN, 1, getDeviceName(), "INT_TIME", "Integration Time", OPTIONS_TAB,
+        IP_RW, 60, IPS_IDLE);
+    IUFillNumberVector(&MeasurementIntTimeNP, MeasurementIntTimeN, m_num_channels, getDeviceName(), "CHANNEL_INT_TIME", "Integration Time", OPTIONS_TAB,
+        IP_RW, 60, IPS_IDLE);
+    IUGetConfigNumber(getDeviceName(), "INT_TIME", "INT_TIME", &MeasurementGlobalIntTimeN.value);
+
     IUFillNumberVector(&VoltageMeasurementNP, VoltageMeasurementN, m_num_channels, getDeviceName(), "MEASUREMENTS", "Measurements", MAIN_CONTROL_TAB,
             IP_RO, 60, IPS_IDLE);
 
@@ -156,6 +162,7 @@ bool IndiADS1x15::updateProperties()
     if (isConnected()) {
         defineProperty(&StatusLP);
         defineProperty(&VoltageMeasurementNP);
+        defineProperty(&MeasurementGlobalIntTimeNP);
         defineProperty(&MeasurementIntTimeNP);
         defineProperty(&MeasurementFactorNP);
         defineProperty(&DriverUpTimeNP);
@@ -163,6 +170,7 @@ bool IndiADS1x15::updateProperties()
     } else {
         deleteProperty(StatusLP.name);
         deleteProperty(VoltageMeasurementNP.name);
+        deleteProperty(MeasurementGlobalIntTimeNP.name);
         deleteProperty(MeasurementIntTimeNP.name);
         deleteProperty(MeasurementFactorNP.name);
         deleteProperty(DriverUpTimeNP.name);
@@ -192,18 +200,35 @@ bool IndiADS1x15::ISNewNumber(const char* dev, const char* name, double values[]
 {
     if (!strcmp(dev, getDeviceName())) {
         //  This one is for us
-        if (!strcmp(name, MeasurementIntTimeNP.name)) {
+        if (!strcmp(name, MeasurementGlobalIntTimeNP.name)) {
             if (!voltageMeasurements.empty() && values[0] > 0. && values[0] < 1000.) {
                 for (auto meas : voltageMeasurements) {
                     meas->setIntTime(std::chrono::milliseconds(static_cast<long int>(values[0] * 1000)));
                 }
-                MeasurementIntTimeN.value = values[0];
+                MeasurementGlobalIntTimeN.value = values[0];
+                MeasurementIntTimeN[0].value = values[0];
+                MeasurementIntTimeN[1].value = values[0];
+                MeasurementIntTimeN[2].value = values[0];
+                MeasurementIntTimeN[3].value = values[0];
+                IDSetNumber(&MeasurementGlobalIntTimeNP, nullptr);
                 IDSetNumber(&MeasurementIntTimeNP, nullptr);
-                MeasurementIntTimeNP.s = IPS_OK;
+                MeasurementGlobalIntTimeNP.s = IPS_OK;
             } else {
                 MeasurementIntTimeNP.s = IPS_ALERT;
             }
-        } else if (!strcmp(name, MeasurementFactorNP.name)) {
+        } if (!strcmp(name, MeasurementIntTimeNP.name)) {
+            for (int i{0}; i < n; ++i) {
+                if (voltageMeasurements[i]) {
+                    voltageMeasurements[i]->setIntTime(std::chrono::milliseconds(static_cast<long int>(values[i] * 1000)));
+                }
+            }
+            IDSetNumber(&MeasurementIntTimeNP, nullptr);
+            MeasurementIntTimeNP.s = IPS_OK;
+//             } else {
+//                 MeasurementIntTimeNP.s = IPS_ALERT;
+//             }
+        } 
+        else if (!strcmp(name, MeasurementFactorNP.name)) {
             if (!voltageMeasurements.empty()) {
                 for (std::size_t i { 0 }; i < std::min(m_num_channels, static_cast<std::size_t>(n)); ++i) {
                     voltageMeasurements[i]->setFactor(values[i]);
@@ -223,6 +248,7 @@ bool IndiADS1x15::ISNewNumber(const char* dev, const char* name, double values[]
 
 bool IndiADS1x15::saveConfigItems(FILE *fp) {
     // Save custom setting
+    IUSaveConfigNumber(fp, &MeasurementGlobalIntTimeNP);
     IUSaveConfigNumber(fp, &MeasurementIntTimeNP);
     IUSaveConfigNumber(fp, &MeasurementFactorNP);
     // Save base device config
@@ -279,7 +305,7 @@ bool IndiADS1x15::Connect()
                 m_adc,
                 voltage_index,
                 MeasurementFactorN[voltage_index].value,
-                std::chrono::milliseconds(static_cast<std::size_t>(MeasurementIntTimeN.value*1000))
+                std::chrono::milliseconds(static_cast<std::size_t>(MeasurementIntTimeN[voltage_index].value*1000))
             )
         );
         channel = std::move(meas);
