@@ -55,7 +55,6 @@ Ads1115Measurement::~Ads1115Measurement()
 // this is the background thread loop
 void Ads1115Measurement::threadLoop()
 {
-    auto lastReadOutTime = std::chrono::system_clock::now();
     while (fActiveLoop) {
         if (hasAdc()) {
             double conv_time { 0. };
