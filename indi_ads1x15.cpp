@@ -216,7 +216,7 @@ bool IndiADS1x15::ISNewNumber(const char* dev, const char* name, double values[]
             } else {
                 MeasurementIntTimeNP.s = IPS_ALERT;
             }
-        } if (!strcmp(name, MeasurementIntTimeNP.name)) {
+        } else if (!strcmp(name, MeasurementIntTimeNP.name)) {
             for (int i{0}; i < n; ++i) {
                 if (voltageMeasurements[i]) {
                     voltageMeasurements[i]->setIntTime(std::chrono::milliseconds(static_cast<long int>(values[i] * 1000)));
