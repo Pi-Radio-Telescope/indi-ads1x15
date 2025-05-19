@@ -44,6 +44,7 @@ public:
     [[nodiscard]] auto currentValue() -> double;
     [[nodiscard]] auto meanValue() -> double;
     [[nodiscard]] auto stddev() -> double;
+    [[nodiscard]] auto nSamples() -> std::size_t;
     [[nodiscard]] auto factor() const -> double { return fFactor; }
     [[nodiscard]] auto name() const -> std::string { return fName; }
     void setIntTime(std::chrono::milliseconds ms);

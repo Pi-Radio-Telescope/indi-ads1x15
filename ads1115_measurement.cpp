@@ -124,6 +124,12 @@ auto Ads1115Measurement::stddev() -> double
     std::lock_guard<std::mutex> lock(fMutex);
     return std::sqrt(fRunningSumSq / fIntegrationBuffer.size() - mean_val * mean_val);
 }
+
+auto Ads1115Measurement::nSamples() -> std::size_t
+{
+    std::lock_guard<std::mutex> lock(fMutex);
+    return fIntegrationBuffer.size();
+}
     
 void Ads1115Measurement::setIntTime(std::chrono::milliseconds ms)
 {
