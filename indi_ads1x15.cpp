@@ -120,6 +120,9 @@ bool IndiADS1x15::initProperties()
     IUFillLightVector(&StatusLP, &StatusL, 1, getDeviceName(), "STATUS", "Connection", MAIN_CONTROL_TAB, IPS_IDLE);
 
     IUFillNumber(&MeasurementGlobalIntTimeN, "INT_TIME", "Int Time", "%5.2f s", 0, 60, 0.1, DEFAULT_INT_TIME.count() / 1000.);
+    IUFillNumberVector(&MeasurementGlobalIntTimeNP, &MeasurementGlobalIntTimeN, 1, getDeviceName(), "INT_TIME", "Integration Time", OPTIONS_TAB,
+        IP_RW, 60, IPS_IDLE);
+    IUGetConfigNumber(getDeviceName(), "INT_TIME", "INT_TIME", &MeasurementGlobalIntTimeN.value);
     
     IUFillNumber(&DriverUpTimeN, "UPTIME", "Uptime", "%5.2f h", 0, 0, 0, 0);
     IUFillNumberVector(&DriverUpTimeNP, &DriverUpTimeN, 1, getDeviceName(), "DRIVER_UPTIME", "Driver Uptime", OPTIONS_TAB,
@@ -136,13 +139,15 @@ bool IndiADS1x15::initProperties()
         }
 
         IUFillNumber(&MeasurementIntTimeN[i], ("INT_TIME"+std::to_string(i)).c_str(), ("Int Time "+std::to_string(i)).c_str(), "%5.2f s", 0, 60, 0.1, DEFAULT_INT_TIME.count() / 1000.);
+
+        double int_time{};
+        if (IUGetConfigNumber(getDeviceName(), "CHANNEL_INT_TIME", ("INT_TIME"+std::to_string(i)).c_str(), &int_time)==0) {
+            MeasurementIntTimeN[i].value = int_time;
+        }
     }
 
-    IUFillNumberVector(&MeasurementGlobalIntTimeNP, &MeasurementGlobalIntTimeN, 1, getDeviceName(), "INT_TIME", "Integration Time", OPTIONS_TAB,
-        IP_RW, 60, IPS_IDLE);
     IUFillNumberVector(&MeasurementIntTimeNP, MeasurementIntTimeN, m_num_channels, getDeviceName(), "CHANNEL_INT_TIME", "Integration Time", OPTIONS_TAB,
         IP_RW, 60, IPS_IDLE);
-    IUGetConfigNumber(getDeviceName(), "INT_TIME", "INT_TIME", &MeasurementGlobalIntTimeN.value);
 
     IUFillNumberVector(&VoltageMeasurementNP, VoltageMeasurementN, m_num_channels, getDeviceName(), "MEASUREMENTS", "Measurements", MAIN_CONTROL_TAB,
             IP_RO, 60, IPS_IDLE);
