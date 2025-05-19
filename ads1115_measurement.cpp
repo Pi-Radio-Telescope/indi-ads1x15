@@ -119,9 +119,9 @@ auto Ads1115Measurement::meanValue() -> double
 
 auto Ads1115Measurement::stddev() -> double
 {
-    std::lock_guard<std::mutex> lock(fMutex);
     if (fIntegrationBuffer.size() < 2) return 0.0;
     double mean_val = meanValue();
+    std::lock_guard<std::mutex> lock(fMutex);
     return std::sqrt(fRunningSumSq / fIntegrationBuffer.size() - mean_val * mean_val);
 }
     
