@@ -129,16 +129,18 @@ bool IndiADS1x15::initProperties()
         IP_RO, 60, IPS_IDLE);
 
     for (std::size_t i { 0 }; i < m_num_channels; ++i) {
-        IUFillNumber(&VoltageMeasurementN[i], ("MEASUREMENT" + std::to_string(i)).c_str(), (default_measurement_voltage_def.name + std::to_string(i)).c_str(), ("%4.3f " + default_measurement_voltage_def.unit).c_str(), 0, 0, 0, 0.);
+        IUFillNumber(&VoltageMeasurementN[i], ("MEASUREMENT" + std::to_string(i)).c_str(), (default_measurement_voltage_def.name + std::to_string(i)).c_str(), ("%4.4f " + default_measurement_voltage_def.unit).c_str(), 0, 0, 0, 0.);
 
-        IUFillNumber(&MeasurementFactorN[i], ("FACTOR" + std::to_string(i)).c_str(), ("Factor " + std::to_string(i)).c_str(), "%4.3f ", -1e6, 1e6, 0, default_measurement_voltage_def.divider_ratio);
+        IUFillNumber(&VoltageMeasurementErrorN[i], ("STDDEV" + std::to_string(i)).c_str(), ("StdDev" + std::to_string(i)).c_str(), ("%4.4f " + default_measurement_voltage_def.unit).c_str(), 0, 0, 0, 0.);
+
+        IUFillNumber(&MeasurementFactorN[i], ("FACTOR" + std::to_string(i)).c_str(), ("Factor " + std::to_string(i)).c_str(), "%4.4f ", -1e6, 1e6, 0, default_measurement_voltage_def.divider_ratio);
         
         double factor{};
         if (IUGetConfigNumber(getDeviceName(), "FACTORS", ("FACTOR"+std::to_string(i)).c_str(), &factor)==0) {
             MeasurementFactorN[i].value = factor;
         }
 
-        IUFillNumber(&MeasurementIntTimeN[i], ("INT_TIME"+std::to_string(i)).c_str(), ("Int Time "+std::to_string(i)).c_str(), "%5.2f s", 0, 60, 0.1, DEFAULT_INT_TIME.count() / 1000.);
+        IUFillNumber(&MeasurementIntTimeN[i], ("INT_TIME"+std::to_string(i)).c_str(), ("Int Time "+std::to_string(i)).c_str(), "%5.2f s", 0.01, 60, 0.1, DEFAULT_INT_TIME.count() / 1000.);
 
         double int_time{};
         if (IUGetConfigNumber(getDeviceName(), "CHANNEL_INT_TIME", ("INT_TIME"+std::to_string(i)).c_str(), &int_time)==0) {
@@ -150,6 +152,9 @@ bool IndiADS1x15::initProperties()
         IP_RW, 60, IPS_IDLE);
 
     IUFillNumberVector(&VoltageMeasurementNP, VoltageMeasurementN, m_num_channels, getDeviceName(), "MEASUREMENTS", "Measurements", MAIN_CONTROL_TAB,
+            IP_RO, 60, IPS_IDLE);
+
+    IUFillNumberVector(&VoltageMeasurementErrorNP, VoltageMeasurementErrorN, m_num_channels, getDeviceName(), "ERRORS", "Measurement Errors", MAIN_CONTROL_TAB,
             IP_RO, 60, IPS_IDLE);
 
     IUFillNumberVector(&MeasurementFactorNP, MeasurementFactorN, m_num_channels, getDeviceName(), "FACTORS", "Calibration", OPTIONS_TAB,
@@ -167,6 +172,7 @@ bool IndiADS1x15::updateProperties()
     if (isConnected()) {
         defineProperty(&StatusLP);
         defineProperty(&VoltageMeasurementNP);
+        defineProperty(&VoltageMeasurementErrorNP);
         defineProperty(&MeasurementGlobalIntTimeNP);
         defineProperty(&MeasurementIntTimeNP);
         defineProperty(&MeasurementFactorNP);
@@ -175,6 +181,7 @@ bool IndiADS1x15::updateProperties()
     } else {
         deleteProperty(StatusLP.name);
         deleteProperty(VoltageMeasurementNP.name);
+        deleteProperty(VoltageMeasurementErrorNP.name);
         deleteProperty(MeasurementGlobalIntTimeNP.name);
         deleteProperty(MeasurementIntTimeNP.name);
         deleteProperty(MeasurementFactorNP.name);
@@ -373,14 +380,18 @@ void IndiADS1x15::updateMonitoring()
                 VoltageMeasurementNP.s = IPS_ALERT;
             } else {
                 double meanVoltage = meas->meanValue();
+                double stddev = meas->stddev();
                 VoltageMeasurementN[voltage_index].value = meanVoltage;
+                VoltageMeasurementErrorN[voltage_index].value = stddev;
             }
             voltage_index++;
         }
         if (VoltageMeasurementNP.s != IPS_ALERT) {
             VoltageMeasurementNP.s = IPS_OK;
+            VoltageMeasurementErrorNP.s = IPS_OK;
         }
         IDSetNumber(&VoltageMeasurementNP, nullptr);
+        IDSetNumber(&VoltageMeasurementErrorNP, nullptr);
     }
 }
 
