@@ -5,7 +5,7 @@ include(GNUInstallDirs)
 # tell cmake where to install the files
 install(FILES 
 indiserver.service
-radioid_mqtt.service
+#rt_mqtt.service
 DESTINATION /usr/lib/systemd/system)
 
 install(CODE "execute_process(COMMAND systemctl daemon-reload)")
