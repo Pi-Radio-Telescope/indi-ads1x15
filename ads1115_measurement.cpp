@@ -64,10 +64,14 @@ void Ads1115Measurement::threadLoop()
                 fValue = fAdc->readVoltage(fAdcChannel) * fFactor;
                 auto currentTime = std::chrono::system_clock::now();
                 conv_time = fAdc->getLastConvTime();
-                while (!fIntegrationBuffer.empty() && fIntegrationBuffer.front().time < (currentTime - fIntTime)) {
-                    fIntegrationBuffer.pop_front();
-                }
+                pruneOldSamples(currentTime);
+//                 while (!fIntegrationBuffer.empty() && fIntegrationBuffer.front().time < (currentTime - fIntTime)) {
+//                     fIntegrationBuffer.pop_front();
+//                 }
+                fRunningSum += fValue;
+                fRunningSumSq += fValue * fValue;
                 fIntegrationBuffer.push_back({ std::move(currentTime), fValue });
+
                 fUpdated = true;
                 fMutex.unlock();
             }
@@ -76,8 +80,18 @@ void Ads1115Measurement::threadLoop()
             auto actual_loop_delay = std::chrono::microseconds(std::max(loop_delay.count() - static_cast<long long int>(conv_time * 1000), 1000LL));
             std::this_thread::sleep_for(actual_loop_delay);
         } else {
+            pruneOldSamples(std::chrono::system_clock::now());
             std::this_thread::sleep_for(loop_delay);
         }
+    }
+}
+
+void Ads1115Measurement::pruneOldSamples(std::chrono::time_point<std::chrono::system_clock> now) {
+    while (!fIntegrationBuffer.empty() && now - fIntegrationBuffer.front().time > fIntTime) {
+        const Sample& old = fIntegrationBuffer.front();
+        fRunningSum -= old.value;
+        fRunningSumSq -= old.value * old.value;
+        fIntegrationBuffer.pop_front();
     }
 }
 
@@ -96,12 +110,21 @@ auto Ads1115Measurement::meanValue() -> double
         return 0.;
     if (fIntegrationBuffer.size() == 1)
         return fValue;
-    double mean = std::accumulate(fIntegrationBuffer.begin(), fIntegrationBuffer.end(), 0.0, [](double sum, Sample s) {
-        return sum + s.value;
-    }) / fIntegrationBuffer.size();
-    return mean;
+    return fRunningSum / fIntegrationBuffer.size();
+//     double mean = std::accumulate(fIntegrationBuffer.begin(), fIntegrationBuffer.end(), 0.0, [](double sum, Sample s) {
+//         return sum + s.value;
+//     }) / fIntegrationBuffer.size();
+//     return mean;
 }
 
+auto Ads1115Measurement::stddev() -> double
+{
+    std::lock_guard<std::mutex> lock(fMutex);
+    if (fIntegrationBuffer.size() < 2) return 0.0;
+    double mean_val = meanValue();
+    return std::sqrt(fRunningSumSq / fIntegrationBuffer.size() - mean_val * mean_val);
+}
+    
 void Ads1115Measurement::setIntTime(std::chrono::milliseconds ms)
 {
     std::lock_guard<std::mutex> lock(fMutex);

@@ -43,6 +43,7 @@ public:
     [[nodiscard]] auto hasAdc() const -> bool { return (fAdc != nullptr); }
     [[nodiscard]] auto currentValue() -> double;
     [[nodiscard]] auto meanValue() -> double;
+    [[nodiscard]] auto stddev() -> double;
     [[nodiscard]] auto factor() const -> double { return fFactor; }
     [[nodiscard]] auto name() const -> std::string { return fName; }
     void setIntTime(std::chrono::milliseconds ms);
@@ -72,6 +73,10 @@ private:
     std::chrono::milliseconds fIntTime { 1000 };
 
     bool fInhibited { false };
+    double fRunningSum { 0. };
+    double fRunningSumSq { 0. };
+
+    void pruneOldSamples(std::chrono::time_point<std::chrono::system_clock> now);
 };
 
 } // namespace PiRaTe
