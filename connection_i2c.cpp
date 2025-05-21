@@ -221,7 +221,6 @@ bool I2C::saveConfigItems(FILE *fp)
 {
     if (m_Permission != IP_RO)
     {
-        DEBUGF(INDI::Logger::DBG_SESSION,"Saving connection config to file %d", fp);
         IUSaveConfigText(fp, &BusTP);
         IUSaveConfigText(fp, &DevAddrTP);
     }
