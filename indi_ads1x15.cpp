@@ -236,25 +236,35 @@ bool IndiADS1x15::ISNewNumber(const char* dev, const char* name, double values[]
                 MeasurementIntTimeNP.s = IPS_ALERT;
             }
         } else if (!strcmp(name, MeasurementIntTimeNP.name)) {
-            for (int i{0}; i < n; ++i) {
-                if (voltageMeasurements[i]) {
-                    voltageMeasurements[i]->setIntTime(std::chrono::milliseconds(static_cast<long int>(values[i] * 1000)));
+            for (int index{0}; index < n; ++index) {
+                INumber* nr = IUFindNumber(&MeasurementIntTimeNP, names[index]);
+                if (nr != nullptr) {
+                    std::size_t nr_pos = std::distance(MeasurementIntTimeN, nr);
+                    if (voltageMeasurements[nr_pos]) {
+                        voltageMeasurements[nr_pos]->setIntTime(std::chrono::milliseconds(static_cast<long int>(values[index] * 1000)));
+                    } else {
+                        MeasurementIntTimeNP.s = IPS_ALERT;
+                    }
                 }
             }
             IDSetNumber(&MeasurementIntTimeNP, nullptr);
             MeasurementIntTimeNP.s = IPS_OK;
         } 
         else if (!strcmp(name, MeasurementFactorNP.name)) {
-            if (!voltageMeasurements.empty()) {
-                for (std::size_t i { 0 }; i < std::min(m_num_channels, static_cast<std::size_t>(n)); ++i) {
-                    voltageMeasurements[i]->setFactor(values[i]);
-                    MeasurementFactorN[i].value = values[i];
+            for (int index{0}; index < n; ++index) {
+                INumber* nr = IUFindNumber(&MeasurementFactorNP, names[index]);
+                if (nr != nullptr) {
+                    std::size_t nr_pos = std::distance(MeasurementFactorN, nr);
+                    if (voltageMeasurements[nr_pos]) {
+                        voltageMeasurements[nr_pos]->setFactor(values[index]);
+                        MeasurementFactorN[nr_pos].value = values[index];
+                    } else {
+                        MeasurementFactorNP.s = IPS_ALERT;
+                    }
                 }
-                IDSetNumber(&MeasurementFactorNP, nullptr);
-                MeasurementFactorNP.s = IPS_OK;
-            } else {
-                MeasurementFactorNP.s = IPS_ALERT;
             }
+            IDSetNumber(&MeasurementFactorNP, nullptr);
+            MeasurementFactorNP.s = IPS_OK;
         }
     }
 
