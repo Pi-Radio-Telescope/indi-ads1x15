@@ -16,6 +16,7 @@
 #include <string.h>
 
 #include "ads1115.h"
+#include "config.h"
 
 namespace Connection {
 class Interface;
@@ -107,9 +108,12 @@ bool IndiADS1x15::initProperties()
 {
     // ALWAYS call initProperties() of parent first
     INDI::DefaultDevice::initProperties();
+    // set driver version from cmake-set constants
+    setVersion(CDRIVER_VERSION_MAJOR, CDRIVER_VERSION_MINOR);
 
+    DBG_DEVICE = INDI::Logger::DBG_SESSION;
     // We add an additional debug level so we can log verbose scope status
-    DBG_DEVICE = INDI::Logger::getInstance().addDebugLevel("Device Verbose", "DEVICE");
+//     DBG_DEVICE = INDI::Logger::getInstance().addDebugLevel("Device Verbose", "DEVICE");
     m_interface = std::make_shared<Connection::I2C>(this);
     registerConnection(m_interface.get());
     setActiveConnection(m_interface.get());
