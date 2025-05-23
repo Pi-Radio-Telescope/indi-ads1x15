@@ -99,6 +99,12 @@ void ISSnoopDevice(XMLEle* root)
  */
 IndiADS1x15::IndiADS1x15()
 {
+    DBG_DEVICE = INDI::Logger::DBG_SESSION;
+    // We add an additional debug level so we can log verbose scope status
+//     DBG_DEVICE = INDI::Logger::getInstance().addDebugLevel("Device Verbose", "DEVICE");
+
+    // set driver version from cmake-set constants
+    setVersion(CDRIVER_VERSION_MAJOR, CDRIVER_VERSION_MINOR);
 }
 
 /**************************************************************************************
@@ -108,12 +114,7 @@ bool IndiADS1x15::initProperties()
 {
     // ALWAYS call initProperties() of parent first
     INDI::DefaultDevice::initProperties();
-    // set driver version from cmake-set constants
-    setVersion(CDRIVER_VERSION_MAJOR, CDRIVER_VERSION_MINOR);
 
-    DBG_DEVICE = INDI::Logger::DBG_SESSION;
-    // We add an additional debug level so we can log verbose scope status
-//     DBG_DEVICE = INDI::Logger::getInstance().addDebugLevel("Device Verbose", "DEVICE");
     m_interface = std::make_shared<Connection::I2C>(this);
     registerConnection(m_interface.get());
     setActiveConnection(m_interface.get());
