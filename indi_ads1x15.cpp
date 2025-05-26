@@ -171,6 +171,7 @@ bool IndiADS1x15::initProperties()
             IP_RW, 60, IPS_IDLE);
 
     addDebugControl();
+    addPollPeriodControl();
     return true;
 }
 
