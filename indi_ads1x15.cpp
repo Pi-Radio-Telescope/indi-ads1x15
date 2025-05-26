@@ -170,6 +170,15 @@ bool IndiADS1x15::initProperties()
     IUFillNumberVector(&MeasurementFactorNP, MeasurementFactorN, m_num_channels, getDeviceName(), "FACTORS", "Calibration", OPTIONS_TAB,
             IP_RW, 60, IPS_IDLE);
 
+    for (auto& gainSwitchVector : GainSwitchPropertyArray) {
+        std::size_t ichannel = std::distance(std::begin(GainSwitchPropertyArray), &gainSwitchVector);
+        for (std::size_t switch_index { 0 }; switch_index < N_GAINS; ++switch_index) {
+            IUFillSwitch(&GainSwitchArray[ichannel][switch_index], GAIN_SWITCH_DESCRIPTORS[switch_index], GAIN_SWITCH_DESCRIPTORS[switch_index], ISS_OFF);
+        }
+        IUFillSwitchVector(&gainSwitchVector, GainSwitchArray[ichannel], N_GAINS, getDeviceName(), std::string("GAIN"+std::to_string(ichannel)).c_str(), std::string("Gain Ch"+std::to_string(ichannel)).c_str(), OPTIONS_TAB,
+        IP_RO, ISR_1OFMANY, 60, IPS_IDLE);
+    }
+
     addDebugControl();
     addPollPeriodControl();
     return true;
@@ -189,6 +198,9 @@ bool IndiADS1x15::updateProperties()
         defineProperty(&MeasurementIntTimeNP);
         defineProperty(&MeasurementFactorNP);
         defineProperty(&DriverUpTimeNP);
+        for (auto& gainSwitchVector : GainSwitchPropertyArray) {
+            defineProperty(&gainSwitchVector);
+        }
         if (m_interface) m_interface->Deactivated();
     } else {
         deleteProperty(StatusLP.name);
@@ -199,6 +211,9 @@ bool IndiADS1x15::updateProperties()
         deleteProperty(MeasurementIntTimeNP.name);
         deleteProperty(MeasurementFactorNP.name);
         deleteProperty(DriverUpTimeNP.name);
+        for (auto& gainSwitchVector : GainSwitchPropertyArray) {
+            deleteProperty(gainSwitchVector.name);
+        }
         if (m_interface) m_interface->Activated();
     }
 
@@ -217,6 +232,28 @@ bool IndiADS1x15::ISNewText(const char *dev, const char *name, char *texts[], ch
 
 bool IndiADS1x15::ISNewSwitch(const char* dev, const char* name, ISState* states, char* names[], int n)
 {
+    if (strcmp(dev, getDeviceName()) == 0) {
+        //  Set gain switch
+        for (auto& gainSwitchVector : GainSwitchPropertyArray) {
+            std::size_t ichannel = std::distance(std::begin(GainSwitchPropertyArray), &gainSwitchVector);
+            if (!strcmp(name, gainSwitchVector.name)) {
+                if (n < 0)
+                    return false;
+//                 IUUpdateSwitch(&gainSwitchVector, states, names, n);
+//                 int index = IUFindOnSwitchIndex(&gainSwitchVector);
+//
+//                 if (index >= 0)
+//                 {
+//
+//                 }
+//
+//                 gainSwitchVector.s = IPS_OK;
+//                 IDSetSwitch(&gainSwitchVector, nullptr);
+                return true;
+            }
+        }
+    }
+
     //  Nobody has claimed this, so forward it to the base class' method
     return INDI::DefaultDevice::ISNewSwitch(dev, name, states, names, n);
 }
@@ -419,6 +456,13 @@ void IndiADS1x15::updateMonitoring()
         IDSetNumber(&VoltageMeasurementNP, nullptr);
         IDSetNumber(&VoltageMeasurementErrorNP, nullptr);
         IDSetNumber(&MeasurementBufSizeNP, nullptr);
+    }
+    for (auto& gainSwitchVector : GainSwitchPropertyArray) {
+        IUResetSwitch(&gainSwitchVector);
+        std::size_t ichannel = std::distance(std::begin(GainSwitchPropertyArray), &gainSwitchVector);
+        int sw_index = static_cast<int>(m_adc->getPga(ichannel));
+        GainSwitchArray[ichannel][sw_index].s = ISS_ON;
+        IDSetSwitch(&gainSwitchVector, nullptr);
     }
 }
 

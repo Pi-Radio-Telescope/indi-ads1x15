@@ -62,6 +62,16 @@ private:
     INumberVectorProperty MeasurementIntTimeNP;
     INumber MeasurementFactorN[m_num_channels];
     INumberVectorProperty MeasurementFactorNP;
+    IText MeasurementUnitT[m_num_channels];
+    ITextVectorProperty MeasurementUnitTP;
+    
+    static constexpr const char* GAIN_SWITCH_DESCRIPTORS[] = { "6V", "4V", "2V", "1V", "512MV", "256MV" };
+    static constexpr std::size_t N_GAINS { 6 };
+
+    std::array<ISwitchVectorProperty, m_num_channels> GainSwitchPropertyArray;
+    std::array<ISwitch[N_GAINS], m_num_channels> GainSwitchArray;
+//     ISwitch GainSwitchS[m_num_channels*7];
+//     ISwitchVectorProperty GainSwitchSP[m_num_channels*7];
 
     INumber DriverUpTimeN;
     INumberVectorProperty DriverUpTimeNP;
