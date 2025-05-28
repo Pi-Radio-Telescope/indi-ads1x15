@@ -105,6 +105,8 @@ IndiADS1x15::IndiADS1x15()
 
     // set driver version from cmake-set constants
     setVersion(CDRIVER_VERSION_MAJOR, CDRIVER_VERSION_MINOR);
+    // set driver interface to AUX_INTERFACE
+    setDriverInterface(INDI::BaseDevice::AUX_INTERFACE);
 }
 
 /**************************************************************************************
