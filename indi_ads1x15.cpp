@@ -181,6 +181,13 @@ bool IndiADS1x15::initProperties()
         IP_RO, ISR_1OFMANY, 60, IPS_IDLE);
     }
 
+    IUFillSwitch(&AgcSwitchS[0], "AGC0", "AGC Ch0", ISS_ON);
+    IUFillSwitch(&AgcSwitchS[1], "AGC1", "AGC Ch1", ISS_ON);
+    IUFillSwitch(&AgcSwitchS[2], "AGC2", "AGC Ch2", ISS_ON);
+    IUFillSwitch(&AgcSwitchS[3], "AGC3", "AGC Ch3", ISS_ON);
+    IUFillSwitchVector(&AgcSwitchSP, AgcSwitchS, m_num_channels, getDeviceName(), "AGC", "AGC", OPTIONS_TAB,
+    IP_RW, ISR_NOFMANY, 60, IPS_IDLE);
+
     addDebugControl();
     addPollPeriodControl();
     return true;
@@ -203,6 +210,7 @@ bool IndiADS1x15::updateProperties()
         for (auto& gainSwitchVector : GainSwitchPropertyArray) {
             defineProperty(&gainSwitchVector);
         }
+        defineProperty(&AgcSwitchSP);
         if (m_interface) m_interface->Deactivated();
     } else {
         deleteProperty(StatusLP.name);
@@ -216,9 +224,9 @@ bool IndiADS1x15::updateProperties()
         for (auto& gainSwitchVector : GainSwitchPropertyArray) {
             deleteProperty(gainSwitchVector.name);
         }
+        deleteProperty(AgcSwitchSP.name);
         if (m_interface) m_interface->Activated();
     }
-
     return true;
 }
 
@@ -235,6 +243,23 @@ bool IndiADS1x15::ISNewText(const char *dev, const char *name, char *texts[], ch
 bool IndiADS1x15::ISNewSwitch(const char* dev, const char* name, ISState* states, char* names[], int n)
 {
     if (strcmp(dev, getDeviceName()) == 0) {
+        // set AGC switch
+        if (!strcmp(name, AgcSwitchSP.name)) {
+            if (n < 0)
+                return false;
+            for (int index = 0; index < n; index++) {
+                ISwitch* sw = IUFindSwitch(&AgcSwitchSP, names[index]);
+                if (sw != nullptr) {
+                    if (sw->s != states[index]) {
+                        m_adc->setAGC((states[index] == ISS_ON)?true:false);
+                    }
+                }
+            }
+            AgcSwitchSP.s = IPS_IDLE;
+            IUUpdateSwitch(&AgcSwitchSP, states, names, n);
+            IDSetSwitch(&AgcSwitchSP, nullptr);
+            return true;
+        }
         //  Set gain switch
         for (auto& gainSwitchVector : GainSwitchPropertyArray) {
             std::size_t ichannel = std::distance(std::begin(GainSwitchPropertyArray), &gainSwitchVector);

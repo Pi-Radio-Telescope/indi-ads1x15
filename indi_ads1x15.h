@@ -70,8 +70,8 @@ private:
 
     std::array<ISwitchVectorProperty, m_num_channels> GainSwitchPropertyArray;
     std::array<ISwitch[N_GAINS], m_num_channels> GainSwitchArray;
-//     ISwitch GainSwitchS[m_num_channels*7];
-//     ISwitchVectorProperty GainSwitchSP[m_num_channels*7];
+    ISwitch AgcSwitchS[m_num_channels];
+    ISwitchVectorProperty AgcSwitchSP;
 
     INumber DriverUpTimeN;
     INumberVectorProperty DriverUpTimeNP;
