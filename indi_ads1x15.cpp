@@ -178,7 +178,7 @@ bool IndiADS1x15::initProperties()
             IUFillSwitch(&GainSwitchArray[ichannel][switch_index], GAIN_SWITCH_DESCRIPTORS[switch_index], GAIN_SWITCH_DESCRIPTORS[switch_index], ISS_OFF);
         }
         IUFillSwitchVector(&gainSwitchVector, GainSwitchArray[ichannel], N_GAINS, getDeviceName(), std::string("GAIN"+std::to_string(ichannel)).c_str(), std::string("Gain Ch"+std::to_string(ichannel)).c_str(), OPTIONS_TAB,
-        IP_RO, ISR_1OFMANY, 60, IPS_IDLE);
+        IP_RW, ISR_1OFMANY, 60, IPS_IDLE);
     }
 
     IUFillSwitch(&AgcSwitchS[0], "AGC0", "AGC Ch0", ISS_ON);
