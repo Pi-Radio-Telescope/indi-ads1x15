@@ -7,6 +7,8 @@ An [INDI](https://indilib.org/) driver for the Analog Devices ADS1x15 series of 
 - Supports ADS1015 and ADS1115 4-channel ADCs
 - I²C communication interface
 - Configurable integration time
+- Adjustable gains (256mV to 6V full swing)
+- Selectable auto range (AGC)
 - Integration with INDI clients for real-time data acquisition
 
 ## Requirements
@@ -58,8 +60,6 @@ These settings can be adjusted through your INDI client interface.
 
 ## Planned Extensions
 
-- **Gain**: Set the programmable gain amplifier (PGA) to adjust the input voltage range.
-- **AGC**: Automatically adjust the input voltage range depending on the current input signal.
 - **Sampling Rate**: Configure the data rate for conversions.
 - **Measurement Mode**: Choose between continuous and single-shot modes.
 
