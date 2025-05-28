@@ -278,10 +278,11 @@ bool IndiADS1x15::ISNewSwitch(const char* dev, const char* name, ISState* states
                     {
                         if (m_adc) {
                             m_adc->setPga(ichannel, index);
+                            gainSwitchVector.s = IPS_OK;
+                        } else {
+                            gainSwitchVector.s = IPS_ALERT;
                         }
                     }
-
-                    gainSwitchVector.s = IPS_OK;
                     IDSetSwitch(&gainSwitchVector, nullptr);
                 }
                 return true;
