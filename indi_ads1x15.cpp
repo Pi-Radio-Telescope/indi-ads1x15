@@ -248,13 +248,14 @@ bool IndiADS1x15::ISNewSwitch(const char* dev, const char* name, ISState* states
         if (!strcmp(name, AgcSwitchSP.name)) {
             if (n < 0)
                 return false;
-            for (int index = 0; index < n; index++) {
+            for (int index = 0; index < n; ++index) {
                 ISwitch* sw = IUFindSwitch(&AgcSwitchSP, names[index]);
                 std::size_t ichannel = std::distance(std::begin(AgcSwitchS), sw);
                 if (sw != nullptr) {
                     if (sw->s != states[index]) {
-                        m_adc->setAGC(ichannel, (states[index] == ISS_ON)?true:false);
-                        GainSwitchPropertyArray[ichannel].p = (states[index] == ISS_ON)?IP_RO:IP_RW;
+                        if (m_adc) {
+                            m_adc->setAGC(ichannel, (states[index] == ISS_ON)?true:false);
+                        } 
                         IDSetSwitch(&GainSwitchPropertyArray[ichannel], nullptr);
                     }
                 }
