@@ -71,8 +71,8 @@ public:
     }
     void setPga(uint8_t channel, uint8_t pga) { setPga(channel, (CFG_PGA)pga); }
     CFG_PGA getPga(int ch) const { return fPga[ch]; }
-    void setAGC(bool state) { fAGC = state; }
-    bool getAGC() const { return fAGC; }
+    void setAGC(uint8_t channel, bool state) { fAGC[channel] = state; }
+    bool getAGC(uint8_t channel) const { return fAGC[channel]; }
     void setRate(uint8_t rate) { fRate = rate & 0x07; }
     unsigned int getRate() const { return fRate; }
     bool setLowThreshold(int16_t thr);
@@ -94,7 +94,7 @@ protected:
     unsigned int fLastADCValue;
     double fLastVoltage;
     unsigned int fReadWaitDelay; ///< conversion wait time in us
-    bool fAGC { false }; ///< software agc which switches over to a better pga setting if voltage too low/high
+    bool fAGC[4] { false, false, false, false }; ///< software agc which switches over to a better pga setting if voltage too low/high
     bool fDiffMode { false }; ///< measure differential input signals (true) or single ended (false=default)
     std::mutex fMutex {};
 

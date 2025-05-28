@@ -9,7 +9,7 @@ void ADS1115::init()
     fPga[0] = fPga[1] = fPga[2] = fPga[3] = PGA4V;
     fReadWaitDelay = READ_WAIT_DELAY_INIT;
     fRate = 0x00; // RATE8
-    fAGC = false;
+    fAGC[0] = fAGC[1] = fAGC[2] = fAGC[3] = false;
     fTitle = "ADS1115";
 }
 
@@ -181,7 +181,7 @@ void ADS1115::readVoltage(unsigned int channel, int16_t& adc, double& voltage)
     adc = readADC(channel);
     voltage = PGAGAINS[fPga[channel]] * adc / 32767.0;
 
-    if (fAGC) {
+    if (fAGC[channel]) {
         int eadc = abs(adc);
         if (eadc > 0.8 * 32767 && (unsigned int)fPga[channel] > 0) {
             fPga[channel] = CFG_PGA((unsigned int)fPga[channel] - 1);

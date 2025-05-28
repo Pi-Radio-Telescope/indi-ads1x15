@@ -381,7 +381,10 @@ bool IndiADS1x15::Connect()
             
     m_adc->setPga(ADS1115::PGA4V);
     m_adc->setRate(ADS1115::RATE860);
-    m_adc->setAGC(true);
+    m_adc->setAGC(0, true);
+    m_adc->setAGC(1, true);
+    m_adc->setAGC(2, true);
+    m_adc->setAGC(3, true);
     double v1 = m_adc->readVoltage(0);
     double v2 = m_adc->readVoltage(1);
     double v3 = m_adc->readVoltage(2);
