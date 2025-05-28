@@ -25,6 +25,7 @@ class Interface;
 constexpr unsigned int POLL_INTERVAL_MS { 500 }; //< polling interval of this driver
 constexpr std::uint8_t DEFAULT_ADC_ADDRESS { 0x48 }; //< default I2C address of ADS1115 ADCs to be read-out
 constexpr std::chrono::milliseconds DEFAULT_INT_TIME { 1000 };
+constexpr std::chrono::seconds MAX_INT_TIME { 1800 };
 
 struct I2cVoltageDef {
     std::string name;
@@ -126,7 +127,7 @@ bool IndiADS1x15::initProperties()
     IUFillLight(&StatusL, "STATUS", "Status", IPS_OK);
     IUFillLightVector(&StatusLP, &StatusL, 1, getDeviceName(), "STATUS", "Connection", MAIN_CONTROL_TAB, IPS_IDLE);
 
-    IUFillNumber(&MeasurementGlobalIntTimeN, "INT_TIME", "Int Time", "%5.2f s", 0, 60, 0.1, DEFAULT_INT_TIME.count() / 1000.);
+    IUFillNumber(&MeasurementGlobalIntTimeN, "INT_TIME", "Int Time", "%5.2f s", 0, MAX_INT_TIME.count(), 0.1, DEFAULT_INT_TIME.count() / 1000.);
     IUFillNumberVector(&MeasurementGlobalIntTimeNP, &MeasurementGlobalIntTimeN, 1, getDeviceName(), "INT_TIME", "Integration Time", OPTIONS_TAB,
         IP_RW, 60, IPS_IDLE);
     IUGetConfigNumber(getDeviceName(), "INT_TIME", "INT_TIME", &MeasurementGlobalIntTimeN.value);
@@ -149,7 +150,7 @@ bool IndiADS1x15::initProperties()
             MeasurementFactorN[i].value = factor;
         }
 
-        IUFillNumber(&MeasurementIntTimeN[i], ("INT_TIME"+std::to_string(i)).c_str(), ("Int Time "+std::to_string(i)).c_str(), "%5.2f s", 0.01, 60, 0.1, DEFAULT_INT_TIME.count() / 1000.);
+        IUFillNumber(&MeasurementIntTimeN[i], ("INT_TIME"+std::to_string(i)).c_str(), ("Int Time "+std::to_string(i)).c_str(), "%5.2f s", 0.01, MAX_INT_TIME.count(), 0.1, DEFAULT_INT_TIME.count() / 1000.);
 
         double int_time{};
         if (IUGetConfigNumber(getDeviceName(), "CHANNEL_INT_TIME", ("INT_TIME"+std::to_string(i)).c_str(), &int_time)==0) {
@@ -296,7 +297,7 @@ bool IndiADS1x15::ISNewNumber(const char* dev, const char* name, double values[]
     if (!strcmp(dev, getDeviceName())) {
         //  This one is for us
         if (!strcmp(name, MeasurementGlobalIntTimeNP.name)) {
-            if (!voltageMeasurements.empty() && values[0] > 0. && values[0] < 1000.) {
+            if (!voltageMeasurements.empty()) {
                 for (auto meas : voltageMeasurements) {
                     meas->setIntTime(std::chrono::milliseconds(static_cast<long int>(values[0] * 1000)));
                 }
