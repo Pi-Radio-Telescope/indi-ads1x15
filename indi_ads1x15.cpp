@@ -462,8 +462,12 @@ void IndiADS1x15::updateMonitoring()
     for (auto& gainSwitchVector : GainSwitchPropertyArray) {
         IUResetSwitch(&gainSwitchVector);
         std::size_t ichannel = std::distance(std::begin(GainSwitchPropertyArray), &gainSwitchVector);
-        int sw_index = static_cast<int>(m_adc->getPga(ichannel));
-        GainSwitchArray[ichannel][sw_index].s = ISS_ON;
+        if (m_adc) {
+            int sw_index = static_cast<int>(m_adc->getPga(ichannel));
+            GainSwitchArray[ichannel][sw_index].s = ISS_ON;
+        } else {
+            gainSwitchVector.s = IPS_ALERT;
+        }
         IDSetSwitch(&gainSwitchVector, nullptr);
     }
 }
