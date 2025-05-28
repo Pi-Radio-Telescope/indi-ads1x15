@@ -249,9 +249,12 @@ bool IndiADS1x15::ISNewSwitch(const char* dev, const char* name, ISState* states
                 return false;
             for (int index = 0; index < n; index++) {
                 ISwitch* sw = IUFindSwitch(&AgcSwitchSP, names[index]);
+                std::size_t ichannel = std::distance(std::begin(AgcSwitchS), sw);
                 if (sw != nullptr) {
                     if (sw->s != states[index]) {
-                        m_adc->setAGC((states[index] == ISS_ON)?true:false);
+                        m_adc->setAGC(ichannel, (states[index] == ISS_ON)?true:false);
+                        GainSwitchPropertyArray[ichannel].p = (states[index] == ISS_ON)?IP_RO:IP_RW;
+                        IDSetSwitch(&GainSwitchPropertyArray[ichannel], nullptr);
                     }
                 }
             }
@@ -266,16 +269,19 @@ bool IndiADS1x15::ISNewSwitch(const char* dev, const char* name, ISState* states
             if (!strcmp(name, gainSwitchVector.name)) {
                 if (n < 0)
                     return false;
-//                 IUUpdateSwitch(&gainSwitchVector, states, names, n);
-//                 int index = IUFindOnSwitchIndex(&gainSwitchVector);
-//
-//                 if (index >= 0)
-//                 {
-//
-//                 }
-//
-//                 gainSwitchVector.s = IPS_OK;
-//                 IDSetSwitch(&gainSwitchVector, nullptr);
+                if (AgcSwitchS[ichannel].s == ISS_OFF) {
+                    IUUpdateSwitch(&gainSwitchVector, states, names, n);
+                    int index = IUFindOnSwitchIndex(&gainSwitchVector);
+                    if (index >= 0)
+                    {
+                        if (m_adc) {
+                            m_adc->setPga(ichannel, index);
+                        }
+                    }
+
+                    gainSwitchVector.s = IPS_OK;
+                    IDSetSwitch(&gainSwitchVector, nullptr);
+                }
                 return true;
             }
         }
