@@ -36,6 +36,7 @@ cmake ..
 make
 sudo make install
 ```
+The make install command will copy the driver binary and a systemd unit file (indiserver.service) into system locations. The latter should be only installed, if no other service is handling the execution of indiserver.
 
 ### 3. Configure INDI
 
@@ -48,13 +49,20 @@ After installation, the driver should be available in your INDI server. You can 
    ```bash
    indiserver indi_ads1x15
    ```
-3. Use an INDI client to connect to the server and interact with the ADS1x15 device.
+   or start the indiserver service through the installed systemd unit file (see above) with
+   ```
+   sudo systemctl start --now indiserver.service
+   ```
+   
+4. Use an INDI client to connect to the server and interact with the ADS1x15 device.
 
 ## Configuration
 
 The driver allows configuration of following parameter:
 
-- **Integration Time**: Configure the buffer depth for required integration time.
+- **Integration Time**: Configure the buffer depth for required integration time for each channel.
+- **PGA Gain**: Set the input voltage range through each input's Programmable Gain Amplifier (PGA)
+- **AGC**: Choose automatic PGA gain setting, continuously tracking the magnitude of the input signals
 
 These settings can be adjusted through your INDI client interface.
 
@@ -62,7 +70,6 @@ These settings can be adjusted through your INDI client interface.
 
 - **Sampling Rate**: Configure the data rate for conversions.
 - **Measurement Mode**: Choose between continuous and single-shot modes.
-
 
 ## Contributing
 
